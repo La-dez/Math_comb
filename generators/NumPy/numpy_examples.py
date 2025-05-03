@@ -32,7 +32,16 @@ percent = np.mean(trials == 3) * 100
 print(f"Ровно три шестёрки: {percent:.2f}%")
 
 #задача про сарай и 6 видов животных
-trials_count = 10_000_000
+#теоретическая формула, выведенная для задачи
+#если когда-нибудь захочется вновь вывести её теоретически, можно расписать эту формулу
+#для случая n=2. Там получится, чтто мы учитываем все случаи, кроме тех, когда все 6 раз встречается один и тот же вид.
+#А дальше для n=3 мы сначала вычитаем случаи, когда 2 вида, а потом добавляем случаи, когда 3 вида.
+#И так далее. В итоге получается формула, которая учитывает все случаи.
+def proba(n):
+    a = np.sum(np.array([((n-k)**6)*comb(n, n-k)*((-1)**k) for k in range(0, n)]))
+    return a * comb(6,n) / (6**6)
+
+trials_count = 100_000_000
 days = 6
 #основная генерация
 throws = np.random.randint(1, 7, size=(trials_count, days))
@@ -42,7 +51,8 @@ animals_per_trial = (throws[:,1:] != throws[:,:-1]).sum(axis=1)+1
 counter = lambda x: np.sum(animals_per_trial == x+1)
 counts = [counter(i) for i in range(6)]
 probs = [count / trials_count for count in counts]
-[print(f"Ровно {i+1} вида(-ов): {counts[i]} случаев ({probs[i]:.2%})") for i in range(6)]
-print(f"Сумма вероятностей: {sum(probs):.2%}")
+probs_theory = [proba(i+1) for i in range(6)]
+[print(f"Ровно {i+1} вида(-ов): {counts[i]} случаев ({probs[i]:.4%} ~ {probs_theory[i]:.4%})") for i in range(6)]
+print(f"Сумма вероятностей: {sum(probs):.2%} ~ {sum(probs_theory):.2%}")
 print(f"Мат. ожидание: {sum([(i+1)*probs[i] for i in range(6)])}")
 
